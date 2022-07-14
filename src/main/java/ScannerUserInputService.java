@@ -46,7 +46,7 @@ class ScannerUserInputService implements UserInputService {
         int input = getUserInputInt("Choose an option below: \n1. Use an existing file\n2. Create a new file");
         switch (input) {
             case 1:
-                fileReaderName = getUserInput("Enter a file name with extension");
+                fileReaderName = getUserInput("Enter a file name without extension");
                 break;
             case 2:
                 fileReaderName = "";

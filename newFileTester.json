@@ -1,0 +1,9 @@
+[
+	{
+firstName: joe,
+lastName: rogan,
+birthYear: 1234,
+birthMonth: 10,
+birthDay: 3
+	}
+];

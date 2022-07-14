@@ -47,7 +47,7 @@ public class Person {
         personString.append("\n");
         personString.append("Birth date = ");
         personString.append(birthMonth + "/");
-        personString.append(birthDay+ "/");
+        personString.append(birthDay + "/");
         personString.append(birthYear);
         personString.append("\n");
 

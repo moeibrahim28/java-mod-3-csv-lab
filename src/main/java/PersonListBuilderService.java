@@ -16,6 +16,10 @@ public class PersonListBuilderService {
         personList = new ArrayList<>();
     }
 
+    public List<Person> getPersonList() {
+        return personList;
+    }
+
     public void printFromFile(String fileName, boolean addNewLine) throws IOException {
         String returnString = "";
         Scanner fileReader = null;
@@ -36,6 +40,7 @@ public class PersonListBuilderService {
 
     public String readFromFile(String fileName) throws Exception {
         Scanner fileReader = null;
+        fileName=fileName+".csv";
         String verifiedFileName="";
         try {
             verifiedFileName=verifyFile(fileName);
@@ -78,9 +83,10 @@ public class PersonListBuilderService {
         int dateBorn = userInputService.getUserInputInt("What date were they born?");
         Person person = new Person(firstName, lastName, yearBorn, monthBorn, dateBorn);
         personList.add(person);
-        String formattedToCSV = person.formatAsCSV();
         writeToFile(fileName, personList);
     }
+
+
 
     void writeToFile(String fileName, List<Person> personList) throws IOException {
         FileWriter fileWriter = null;
