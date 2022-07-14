@@ -8,12 +8,13 @@ public class FileIORunner {
         UserOutputService userOutputService = new SysoutUserOutputService();
         try (UserInputService userInputService = new ScannerUserInputService(userOutputService)) {
             boolean runValue = true;
-            PersonBuilderService personBuilderService = new PersonBuilderService(userInputService);
-            PersonListBuilderService personListBuilderService = new PersonListBuilderService(personBuilderService, userInputService);
+            PersonListBuilderService personListBuilderService = new PersonListBuilderService(userInputService);
 
             //Ask user if they want to restore a list if not create one
             String fileName = userInputService.askUserAboutFile();
             String verifiedFileName;
+
+            //check validity of file name and get a verified filename
             if (!fileName.isBlank()) {
                 String nonBlankName = personListBuilderService.readFromFile(fileName);
                 verifiedFileName = nonBlankName;
@@ -23,7 +24,7 @@ public class FileIORunner {
                 verifiedFileName = newFileName;
             }
 
-
+            //loops for asking user to pick an action
             while (runValue) {
                 UserOutputService userChoiceOutputService = new SysoutUserOutputService();
                 UserInputService userChoiceInputService = new ScannerUserInputService(userChoiceOutputService);
@@ -54,22 +55,26 @@ public class FileIORunner {
 
     }
 
+
+    //ask user if they want to add a person, print, or exit
     static int getUserAction(UserInputService userInputService) {
         int choice = userInputService.getUserInputInt("What would you like to do?\n1. Add a person to the list.\n2. Print the list of current people.\n3. Exit the program.");
         return choice;
     }
 
+    //print each person in JSON format
     static void printPersonListAsJSON(List<Person> personList) throws Exception {
         String json = new ObjectMapper().writeValueAsString(personList);
         System.out.println(json);
 }
 
 
-
+    //save to json file
     static void savePersonListJSON(String fileName, List<Person> personList) throws Exception {
         String allPersonsAsJSON = new ObjectMapper().writeValueAsString(personList);
         writeToFile(fileName, allPersonsAsJSON);
     }
+
 
     static void writeToFile(String fileName, String text) throws IOException {
         FileWriter fileWriter = null;

@@ -6,12 +6,10 @@ import java.util.List;
 import java.util.Scanner;
 
 public class PersonListBuilderService {
-    private final PersonBuilderService personBuilderService;
     private final UserInputService userInputService;
     private final List<Person> personList;
 
-    public PersonListBuilderService(PersonBuilderService personBuilderService, UserInputService userInputService) {
-        this.personBuilderService = personBuilderService;
+    public PersonListBuilderService(UserInputService userInputService) {
         this.userInputService = userInputService;
         personList = new ArrayList<>();
     }
@@ -20,6 +18,7 @@ public class PersonListBuilderService {
         return personList;
     }
 
+    //print from file and add new lines
     public void printFromFile(String fileName, boolean addNewLine) throws IOException {
         String returnString = "";
         Scanner fileReader = null;
@@ -38,6 +37,7 @@ public class PersonListBuilderService {
         System.out.println(returnString);
     }
 
+    //read from file if it exists and add people to the list
     public String readFromFile(String fileName) throws Exception {
         Scanner fileReader = null;
         fileName=fileName+".csv";
@@ -62,7 +62,7 @@ public class PersonListBuilderService {
         return verifiedFileName;
     }
 
-
+    //make sure the file name belongs to an exisiting file
     public String verifyFile(String fileName) throws Exception {
         String verifiedFileName = fileName;
             File myFile = new File(fileName);
@@ -75,6 +75,7 @@ public class PersonListBuilderService {
         return verifiedFileName;
     }
 
+    //add person to list of persons
     void addPersonToList(String fileName) throws IOException {
         String firstName = userInputService.getUserInput("What is their first name?");
         String lastName = userInputService.getUserInput("What is their last name?");
@@ -87,7 +88,7 @@ public class PersonListBuilderService {
     }
 
 
-
+    //write to files i.e save
     void writeToFile(String fileName, List<Person> personList) throws IOException {
         FileWriter fileWriter = null;
         try {
