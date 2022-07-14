@@ -13,6 +13,10 @@ public class Person {
         this.birthDay = birthDay;
     }
 
+    public Person(){
+
+    }
+
     public Person(String personCSV) {
         String[] personValues = personCSV.split(",");
         this.firstName = personValues[0];

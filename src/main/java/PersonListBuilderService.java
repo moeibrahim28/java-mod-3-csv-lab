@@ -2,12 +2,15 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class PersonListBuilderService {
     private final UserInputService userInputService;
-    private final List<Person> personList;
+    private List<Person> personList;
 
     public PersonListBuilderService(UserInputService userInputService) {
         this.userInputService = userInputService;
@@ -18,7 +21,11 @@ public class PersonListBuilderService {
         return personList;
     }
 
-    //print from file and add new lines
+    public void setPersonList(List<Person> personList) {
+        this.personList = personList;
+    }
+
+    // print from file and add new lines
     public void printFromFile(String fileName, boolean addNewLine) throws IOException {
         String returnString = "";
         Scanner fileReader = null;
@@ -37,13 +44,13 @@ public class PersonListBuilderService {
         System.out.println(returnString);
     }
 
-    //read from file if it exists and add people to the list
-    public String readFromFile(String fileName) throws Exception {
+    // read from file if it exists and add people to the list
+    public String readFromCSV(String fileName, String fileType) throws Exception {
         Scanner fileReader = null;
-        fileName=fileName+".csv";
-        String verifiedFileName="";
+        fileName = fileName + fileType;
+        String verifiedFileName = fileName;
         try {
-            verifiedFileName=verifyFile(fileName);
+            verifiedFileName = verifyFile(fileName, fileType);
             File myFile = new File(verifiedFileName);
             fileReader = new Scanner(myFile);
             String thisLine;
@@ -53,29 +60,51 @@ public class PersonListBuilderService {
                 personList.add(person);
             }
 
-
-        } catch (
-                Exception e) {
+        } catch (Exception e) {
             throw new Exception(e);
 
         }
         return verifiedFileName;
     }
 
-    //make sure the file name belongs to an exisiting file
-    public String verifyFile(String fileName) throws Exception {
+    public String readFromJSON(String fileName, String fileType, boolean addNewLine) throws Exception {
+
+        String returnString = new String();
+        fileName = fileName + fileType;
         String verifiedFileName = fileName;
-            File myFile = new File(fileName);
-            while (!myFile.exists()) {
-                String newFileName=userInputService.getUserInput("Enter a different file name since that file is not found.");
-                verifiedFileName=newFileName;
-                myFile=new File(verifiedFileName);
-            }
+        Scanner fileReader = null;
+        try {
+
+            verifiedFileName = verifyFile(fileName, fileType);
+            File myFile = new File(verifiedFileName);
+            fileReader = new Scanner(myFile);
+            List<Person> restoredPersons = Arrays.asList(new ObjectMapper().readValue(myFile, Person[].class));
+            this.personList = restoredPersons;
+        } catch (IOException ioException) {
+            ioException.printStackTrace();
+        } finally {
+            if (fileReader != null)
+                fileReader.close();
+        }
+
+        return returnString;
+    }
+
+    // make sure the file name belongs to an exisiting file
+    public String verifyFile(String fileName, String fileType) throws Exception {
+        String verifiedFileName = fileName;
+        File myFile = new File(fileName);
+        while (!myFile.exists()) {
+            String newFileName = userInputService
+                    .getUserInput("Enter a different file name since that file is not found.");
+            verifiedFileName = newFileName;
+            myFile = new File(verifiedFileName);
+        }
 
         return verifiedFileName;
     }
 
-    //add person to list of persons
+    // add person to list of persons
     void addPersonToList(String fileName) throws IOException {
         String firstName = userInputService.getUserInput("What is their first name?");
         String lastName = userInputService.getUserInput("What is their last name?");
@@ -87,8 +116,7 @@ public class PersonListBuilderService {
         writeToFile(fileName, personList);
     }
 
-
-    //write to files i.e save
+    // write to files i.e save
     void writeToFile(String fileName, List<Person> personList) throws IOException {
         FileWriter fileWriter = null;
         try {
