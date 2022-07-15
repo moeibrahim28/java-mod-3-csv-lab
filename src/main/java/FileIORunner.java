@@ -1,3 +1,4 @@
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.File;
@@ -16,12 +17,14 @@ public class FileIORunner {
 
             // Ask user if they want to restore a list if not create one
             String fileName = userInputService.askUserAboutFile();
+            int extensionChoice = getFileExtenion(userInputService);
             String verifiedFileName;
+            String fileExtension = "";
 
             // check validity of file name and get a verified filename
             if (!fileName.isBlank()) {
-                int extensionChoice = getFileExtenion(userInputService);
-                String fileExtension = "";
+
+
                 String nonBlankName = "";
                 switch (extensionChoice) {
                     case 1:
@@ -37,22 +40,23 @@ public class FileIORunner {
 
                 // load for csv file
                 if (fileExtension.equals(".csv")) {
-                    nonBlankName = personListBuilderService.readFromCSV(fileName, fileExtension);
-
+                    personListBuilderService.readFromCSV(fileName, fileExtension);
+                    verifiedFileName=fileName;
                 }
 
                 // load json file
                 else {
-                    nonBlankName = personListBuilderService.readFromJSON(fileName, ".json", true);
+                    personListBuilderService.verifyFile(personListBuilderService.getNewFileName(), ".json");
+                    verifiedFileName=fileName;
+                    personListBuilderService.readPersonListFromJSON(fileName+ ".json");
 
                 }
-                verifiedFileName = nonBlankName;
             }
             // get new file name and repeat
             else {
                 String newFileName = userInputService.getUserInput(
                         "Please give the name of this new file. It will be made a .csv file or .json file by the system.");
-                int extensionChoice = getFileExtenion(userInputService);
+                extensionChoice = getFileExtenion(userInputService);
                 newFileName = newFileName + extensionChoice;
                 verifiedFileName = newFileName;
             }
@@ -64,14 +68,21 @@ public class FileIORunner {
                 int userChoice = getUserAction(userChoiceInputService);
                 switch (userChoice) {
                     case 1:
-                        personListBuilderService.addPersonToList(verifiedFileName);
+                        personListBuilderService.addPersonToList(verifiedFileName,fileExtension);
                         break;
                     case 2:
-                        personListBuilderService.printFromFile(verifiedFileName, true);
+                        if(fileExtension.equals(".csv")) {
+                            personListBuilderService.printFromFile(verifiedFileName + fileExtension, true);
+                        }
+                        else{
+                            personListBuilderService.printJson(personListBuilderService.getPersonList());
+                        }
                         break;
                     case 3:
                         runValue = false;
-                        savePersonList(verifiedFileName, personListBuilderService.getPersonList());
+                        savePersonListCSV(verifiedFileName, fileExtension, personListBuilderService.getPersonList());
+                        personListBuilderService.writeJson(personListBuilderService.getPersonList(),verifiedFileName);
+
                         break;
                     default:
                         System.out.println("Invalid input. Choose one of the following options:");
@@ -100,23 +111,39 @@ public class FileIORunner {
 
     // print each person in JSON format
     static void printPersonListAsJSON(List<Person> personList) throws Exception {
-        for (Person person : personList) {
-            String personJSON = new ObjectMapper().writeValueAsString(person);
-            System.out.println("\n" + personJSON);
-        }
-
+        String json = new ObjectMapper().writeValueAsString(personList);
+        System.out.println(json);
     }
 
     // save to json file
-    static void savePersonList(String fileName, List<Person> personList) throws Exception {
+    static void savePersonListCSV(String fileName, String fileExtension, List<Person> personList) throws Exception {
         StringBuffer allPersonsAsCSV = new StringBuffer();
-        personList.forEach((person) -> {
+        if(fileExtension.equals(".csv")){
+            personList.forEach((person) -> {
             String personString = person.formatAsCSV();
             allPersonsAsCSV.append(personString + "\n");
         });
-        writeToFile(fileName, allPersonsAsCSV.toString());
+        writeToFile(fileName,allPersonsAsCSV.toString());
         printPersonListAsJSON(personList);
     }
+    else {
+            personList.stream().map(person -> "").forEach(personString -> {
+                try {
+                    String json = new ObjectMapper().writeValueAsString(personList);
+                    allPersonsAsCSV.append(json);
+                } catch (JsonProcessingException e) {
+                    throw new RuntimeException(e);
+                }
+                try {
+                    writeToFile(fileName, allPersonsAsCSV.toString());
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        }
+    }
+
+
 
     static void writeToFile(String fileName, String text) throws IOException {
         FileWriter fileWriter = null;
@@ -130,5 +157,7 @@ public class FileIORunner {
                 fileWriter.close();
         }
     }
+
+
 
 }
